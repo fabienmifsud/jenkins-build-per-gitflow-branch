@@ -170,7 +170,7 @@ class JenkinsApi {
 
     protected void replacePlaceHolders(Node node, String branchName, String gitUrl) {
         if(node != null) {
-            node[0].value = node.text().replaceAll(/GITBRANCH/, branchName)
+            node.value = node.text().replaceAll(/GITBRANCH/, branchName)
                                        .replaceAll(/GITURL/, gitUrl);
         }
     }
