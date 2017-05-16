@@ -93,22 +93,22 @@ class JenkinsApi {
 
         def root = new XmlParser().parseText(entryConfig)
         // update branch name
-        replacePlaceHolders(root.scm.branches."hudson.plugins.git.BranchSpec".name[0])
+        replacePlaceHolders(root.scm.branches."hudson.plugins.git.BranchSpec".name[0],branchName,gitUrl)
 
         // update GIT url
-        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".url[0])
+        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".url[0],branchName,gitUrl)
         // Update 'RefSpec'
-        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".refspec[0])
+        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".refspec[0],branchName,gitUrl)
         // Update 'Sparse Checkout Paths'
-        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.SparseCheckoutPaths".sparseCheckoutPaths."hudson.plugins.git.extensions.impl.SparseCheckoutPath".path[0])
+        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.SparseCheckoutPaths".sparseCheckoutPaths."hudson.plugins.git.extensions.impl.SparseCheckoutPath".path[0],branchName,gitUrl)
         // Updating 'Polling ignores commits in certain paths (include)'
-        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.PathRestriction".includedRegions[0])
+        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.PathRestriction".includedRegions[0],branchName,gitUrl)
 
         //update Sonar
-        replacePlaceHolders(root.publishers."hudson.plugins.sonar.SonarPublisher".branch[0])
+        replacePlaceHolders(root.publishers."hudson.plugins.sonar.SonarPublisher".branch[0],branchName,gitUrl)
 
-        // TODO: Update Environment Inject
-        replacePlaceHolders(root.buildWrappers.EnvInjectBuildWrapper.info.propertiesContent[0])
+        // Update Environment Inject
+        replacePlaceHolders(root.buildWrappers.EnvInjectBuildWrapper.info.propertiesContent[0],branchName,gitUrl)
 
         //update Publish over SSH exec
         def publishers = root.postbuilders."jenkins.plugins.publish__over__ssh.BapSshBuilderPlugin".delegate.delegate.publishers."jenkins.plugins.publish__over__ssh.BapSshPublisher"
@@ -132,7 +132,6 @@ class JenkinsApi {
             root.remove(propertiesNode)
             new Node(root, 'properties')
         }
-
 
         def writer = new StringWriter()
         XmlNodePrinter xmlPrinter = new XmlNodePrinter(new PrintWriter(writer))
@@ -169,10 +168,10 @@ class JenkinsApi {
         post("job/${jobName}/doDelete")
     }
 
-    protected Node replacePlaceHolders(Node node) {
+    protected Node replacePlaceHolders(Node node, String branchName, String gitUrl) {
         if(node && node.value) {
-            node.value = node.value.replaceAll(/\[\$GITBRANCH\]/, $branchName);
-            node.value = node.value.replaceAll(/\[\$GITURL\]/, $gitUrl);
+            node.value = node.value.replaceAll(/\[\$GITBRANCH\]/, branchName);
+            node.value = node.value.replaceAll(/\[\$GITURL\]/, gitUrl);
         }
     }
 
