@@ -168,14 +168,10 @@ class JenkinsApi {
         post("job/${jobName}/doDelete")
     }
 
-    protected Node replacePlaceHolders(Node node, String branchName, String gitUrl) {
+    protected void replacePlaceHolders(Node node, String branchName, String gitUrl) {
         if(node != null) {
-            println "Replacing node value"
-            node.value = node.text().replaceAll(/GITBRANCH/, branchName)
+            node.value = node.value().replaceAll(/GITBRANCH/, branchName)
                                     .replaceAll(/GITURL/, gitUrl);
-        }
-        else {
-            println "Skipping null node"
         }
     }
 
