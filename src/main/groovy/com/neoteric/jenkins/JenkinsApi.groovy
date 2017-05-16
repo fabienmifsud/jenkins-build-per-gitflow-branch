@@ -16,7 +16,6 @@ import org.apache.http.HttpRequest
 
 class JenkinsApi {
 
-
     final String SHOULD_START_PARAM_NAME = "startOnCreate"
     String jenkinsServerUrl
     RESTClient restClient
@@ -94,15 +93,21 @@ class JenkinsApi {
 
         def root = new XmlParser().parseText(entryConfig)
         // update branch name
-        root.scm.branches."hudson.plugins.git.BranchSpec".name[0].value = "*/$branchName"
+        replacePlaceHolders(root.scm.branches."hudson.plugins.git.BranchSpec".name[0])
 
         // update GIT url
-        root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".url[0].value = "$gitUrl"
+        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".url[0])
+        // Update 'RefSpec'
+        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".refspec[0])
+        // Update 'Sparse Checkout Paths'
+        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.SparseCheckoutPaths".sparseCheckoutPaths."hudson.plugins.git.extensions.impl.SparseCheckoutPath".path[0])
+        // Updating 'Polling ignores commits in certain paths (include)'
+        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.PathRestriction".includedRegions[0])
 
         //update Sonar
-        if (root.publishers."hudson.plugins.sonar.SonarPublisher".branch[0] != null) {
-            root.publishers."hudson.plugins.sonar.SonarPublisher".branch[0].value = "$branchName"
-        }
+        replacePlaceHolders(root.publishers."hudson.plugins.sonar.SonarPublisher".branch[0])
+
+        // TODO: Update Environment Inject
 
         //update Publish over SSH exec
         def publishers = root.postbuilders."jenkins.plugins.publish__over__ssh.BapSshBuilderPlugin".delegate.delegate.publishers."jenkins.plugins.publish__over__ssh.BapSshPublisher"
@@ -163,6 +168,12 @@ class JenkinsApi {
         post("job/${jobName}/doDelete")
     }
 
+    protected Node replacePlaceHolders(Node node) {
+        if(node && node.value) {
+            node.value = node.value.replaceAll(/\[\$GITBRANCH\]/, $branchName);
+            node.value = node.value.replaceAll(/\[\$GITURL\]/, $gitUrl);
+        }
+    }
 
     protected get(Map map) {
         // get is destructive to the map, if there's an error we want the values around still
