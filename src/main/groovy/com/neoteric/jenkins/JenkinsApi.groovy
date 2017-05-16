@@ -108,6 +108,7 @@ class JenkinsApi {
         replacePlaceHolders(root.publishers."hudson.plugins.sonar.SonarPublisher".branch[0])
 
         // TODO: Update Environment Inject
+        replacePlaceHolders(root.buildWrappers.EnvInjectBuildWrapper.info.propertiesContent[0])
 
         //update Publish over SSH exec
         def publishers = root.postbuilders."jenkins.plugins.publish__over__ssh.BapSshBuilderPlugin".delegate.delegate.publishers."jenkins.plugins.publish__over__ssh.BapSshPublisher"
