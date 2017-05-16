@@ -58,7 +58,6 @@ class JenkinsApi {
 
     void cloneJobForBranch(String jobPrefix, ConcreteJob missingJob, String createJobInView, String gitUrl) {
         String createJobInViewPath = resolveViewPath(createJobInView)
-        println "-----> createInView after" + createJobInView
         String missingJobConfig = configForMissingJob(missingJob, gitUrl)
         TemplateJob templateJob = missingJob.templateJob
 
@@ -93,7 +92,7 @@ class JenkinsApi {
         def newConfig = entryConfig;
         for(placeholder in placeholders) {
             println "Processing placeholder: $placeholder.key, [&$placeholder.key]=>$placeholder.value"
-            newConfig = newConfig.replaceAll("[&$placeholder.key]", placeholder.value);
+            newConfig = newConfig.replaceAll("\\[\\&$placeholder.key\\]", placeholder.value);
         }
         return newConfig;
     }
