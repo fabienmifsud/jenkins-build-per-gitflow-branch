@@ -90,7 +90,7 @@ class JenkinsApi {
     }
 
     public String processConfig(String entryConfig, Map<String,String> placeholders) {
-        def newConfig = entryCofig;
+        def newConfig = entryConfig;
         for(placeholder in placeholders) {
             newConfig = newConfig.replaceAll("[&$placeholder.key]", placeholder.value);
         }
