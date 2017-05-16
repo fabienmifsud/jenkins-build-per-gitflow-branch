@@ -56,10 +56,10 @@ class JenkinsApi {
         response.data.text
     }
 
-    void cloneJobForBranch(String jobPrefix, ConcreteJob missingJob, String createJobInView, String gitUrl, String scriptCommand) {
+    void cloneJobForBranch(String jobPrefix, ConcreteJob missingJob, String createJobInView, String gitUrl) {
         String createJobInViewPath = resolveViewPath(createJobInView)
         println "-----> createInView after" + createJobInView
-        String missingJobConfig = configForMissingJob(missingJob, gitUrl, scriptCommand)
+        String missingJobConfig = configForMissingJob(missingJob, gitUrl)
         TemplateJob templateJob = missingJob.templateJob
 
         //Copy job with jenkins copy job api, this will make sure jenkins plugins get the call to make a copy if needed (promoted builds plugin needs this)

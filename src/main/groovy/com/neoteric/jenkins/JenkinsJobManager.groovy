@@ -9,7 +9,6 @@ class JenkinsJobManager {
     String createJobInView
     String jenkinsUser
     String jenkinsPassword
-    String scriptCommand
     String sonarUrl
     String sonarUser
     String sonarPassword
@@ -131,7 +130,7 @@ class JenkinsJobManager {
         if (missingJobs) {
             for (ConcreteJob missingJob in missingJobs) {
                 println "Creating missing job: ${missingJob.jobName} from ${missingJob.templateJob.jobName}"
-                jenkinsApi.cloneJobForBranch(jobPrefix, missingJob, createJobInView, gitUrl, scriptCommand)
+                jenkinsApi.cloneJobForBranch(jobPrefix, missingJob, createJobInView, gitUrl)
                 jenkinsApi.startJob(missingJob)
             }
         }
