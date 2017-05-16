@@ -67,11 +67,8 @@ class JenkinsApi {
 
         post('job/' + missingJob.jobName + "/config.xml", missingJobConfig, [:], ContentType.XML)
         //Forced disable enable to work around Jenkins' automatic disabling of clones jobs
-        //But only if the original job was enabled
         post('job/' + missingJob.jobName + '/disable')
-        if (!missingJobConfig.contains("<disabled>true</disabled>")) {
-            post('job/' + missingJob.jobName + '/enable')
-        }
+        post('job/' + missingJob.jobName + '/enable')
     }
 
     public String resolveViewPath(String createInView) {
@@ -83,61 +80,21 @@ class JenkinsApi {
         elements.join();
     }
 
-    String configForMissingJob(ConcreteJob missingJob, String gitUrl, String scriptCommand) {
+    String configForMissingJob(ConcreteJob missingJob, String gitUrl) {
         TemplateJob templateJob = missingJob.templateJob
         String config = getJobConfig(templateJob.jobName)
-        return processConfig(config, missingJob.branchName, gitUrl, scriptCommand)
+        return processConfig(config,[
+            "GITBRANCH":missingJob.branchName,
+            "GITURL":gitUrl
+        ])
     }
 
-    public String processConfig(String entryConfig, String branchName, String gitUrl, String scriptCommand) {
-
-        def root = new XmlParser().parseText(entryConfig)
-        // update branch name
-        replacePlaceHolders(root.scm.branches."hudson.plugins.git.BranchSpec".name[0], branchName, gitUrl)
-
-        // update GIT url
-        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".url[0],branchName,gitUrl)
-        // Update 'RefSpec'
-        replacePlaceHolders(root.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".refspec[0],branchName,gitUrl)
-        // Update 'Sparse Checkout Paths'
-        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.SparseCheckoutPaths".sparseCheckoutPaths."hudson.plugins.git.extensions.impl.SparseCheckoutPath".path[0],branchName,gitUrl)
-        // Updating 'Polling ignores commits in certain paths (include)'
-        replacePlaceHolders(root.scm.extensions."hudson.plugins.git.extensions.impl.PathRestriction".includedRegions[0],branchName,gitUrl)
-
-        //update Sonar
-        replacePlaceHolders(root.publishers."hudson.plugins.sonar.SonarPublisher".branch[0],branchName,gitUrl)
-
-        // Update Environment Inject
-        replacePlaceHolders(root.buildWrappers.EnvInjectBuildWrapper.info.propertiesContent[0],branchName,gitUrl)
-
-        //update Publish over SSH exec
-        def publishers = root.postbuilders."jenkins.plugins.publish__over__ssh.BapSshBuilderPlugin".delegate.delegate.publishers."jenkins.plugins.publish__over__ssh.BapSshPublisher"
-        if (publishers != null) {
-            for (publisher in publishers) {
-                publisher.transfers[0]."jenkins.plugins.publish__over__ssh.BapSshTransfer"[0].execCommand[0].value = "$scriptCommand"
-            }
+    public String processConfig(String entryConfig, Map<string,string> placeholders) {
+        def newConfig = entryCofig;
+        for(placeholder in placeholders) {
+            newConfig = newConfig.replaceAll("[&$placeholder.key]", placeholder.value);
         }
-
-        //remove template build variable
-        Node startOnCreateParam = findStartOnCreateParameter(root)
-        if (startOnCreateParam) {
-            startOnCreateParam.parent().remove(startOnCreateParam)
-        }
-
-        //check if it was the only parameter - if so, remove the enclosing tag, so the project won't be seen as build with parameters
-        def propertiesNode = root.properties
-        def parameterDefinitionsProperty = propertiesNode."hudson.model.ParametersDefinitionProperty".parameterDefinitions[0]
-
-        if (parameterDefinitionsProperty && !parameterDefinitionsProperty.attributes() && !parameterDefinitionsProperty.children() && !parameterDefinitionsProperty.text()) {
-            root.remove(propertiesNode)
-            new Node(root, 'properties')
-        }
-
-        def writer = new StringWriter()
-        XmlNodePrinter xmlPrinter = new XmlNodePrinter(new PrintWriter(writer))
-        xmlPrinter.setPreserveWhitespace(true)
-        xmlPrinter.print(root)
-        return writer.toString()
+        return newConfig;
     }
 
     void startJob(ConcreteJob job) {
@@ -166,13 +123,6 @@ class JenkinsApi {
     void deleteJob(String jobName) {
         println "deleting job $jobName"
         post("job/${jobName}/doDelete")
-    }
-
-    protected void replacePlaceHolders(Node node, String branchName, String gitUrl) {
-        if(node != null) {
-            node.value = node.text().replaceAll(/\[\&GITBRANCH\]/, branchName)
-                                    .replaceAll(/\[\&GITURL\]/, gitUrl);
-        }
     }
 
     protected get(Map map) {
