@@ -171,8 +171,8 @@ class JenkinsApi {
     protected Node replacePlaceHolders(Node node, String branchName, String gitUrl) {
         if(node != null) {
             println "Replacing node value"
-            node.value = node.value.replaceAll(/\[\$GITBRANCH\]/, branchName);
-            node.value = node.value.replaceAll(/\[\$GITURL\]/, gitUrl);
+            node.value = node.value.replaceAll(/\[\&GITBRANCH\]/, branchName);
+            node.value = node.value.replaceAll(/\[\&GITURL\]/, gitUrl);
         }
     }
 
