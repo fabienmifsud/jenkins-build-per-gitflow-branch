@@ -12,6 +12,8 @@ class JenkinsJobManager {
     String sonarUrl
     String sonarUser
     String sonarPassword
+    String checkoutPath
+    String solutionFile
 
     Boolean dryRun = false
     Boolean noDelete = false
@@ -130,7 +132,7 @@ class JenkinsJobManager {
         if (missingJobs) {
             for (ConcreteJob missingJob in missingJobs) {
                 println "Creating missing job: ${missingJob.jobName} from ${missingJob.templateJob.jobName}"
-                jenkinsApi.cloneJobForBranch(jobPrefix, missingJob, createJobInView, gitUrl)
+                jenkinsApi.cloneJobForBranch(jobPrefix, missingJob, createJobInView, gitUrl, checkoutPath, solutionFile)
                 jenkinsApi.startJob(missingJob)
             }
         }

@@ -18,7 +18,10 @@ class Main {
             pwd: [longOpt: 'jenkins-password', required: false, args: 1, argName: 'jenkinsPassword', description: "Jenkins password - gradle flag -DjenkinsPassword=<jenkinsPassword>"],
             sp : [longOpt: 'sonar-password', required: false, args: 1, argName: 'sonarPassword', description: "Sonar password - gradle flag -DsonarPassword=<sonarPassword>"],
             su : [longOpt: 'sonar-user', required: false, args: 1, argName: 'sonarUser', description: "Sonar username - gradle flag -DsonarUser=<sonarUser>"],
-            surl : [longOpt: 'sonar-url', required: false, args: 1, argName: 'sonarUrl', description: "Sonar URL - gradle flag -DsonarUrl=<sonarUrl>"]
+            surl : [longOpt: 'sonar-url', required: false, args: 1, argName: 'sonarUrl', description: "Sonar URL - gradle flag -DsonarUrl=<sonarUrl>"],
+            // TODO: Replace below with key:value pairs
+            co : [longOpt: 'checkout-path', required: false, args: 1, argName: 'checkoutPath', description: "Checkout Path - gradle flag -DcheckoutPath=<checkoutPath>"],
+            sf : [longOpt: 'solution-file', required: false, args: 1, argName: 'solutionFile', description: "Solution File - gradle flag -DsolutionFile=<solutionFile>"]
     ]
 
     public static void main(String[] args) {
