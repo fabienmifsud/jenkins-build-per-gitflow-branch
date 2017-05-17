@@ -92,7 +92,7 @@ class JenkinsApi {
         def newConfig = entryConfig;
         println "START---->$newConfig"
         for(placeholder in placeholders) {
-            def key = "[&$placeholder.key]";
+            def key = "[&amp;$placeholder.key]";
             println "Processing $placeholder.key: $key=>$placeholder.value"
             newConfig = newConfig.replace(key, placeholder.value);
         }
