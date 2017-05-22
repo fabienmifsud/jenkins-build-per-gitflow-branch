@@ -16,12 +16,7 @@ class Main {
             k  : [longOpt: 'no-delete', required: false, args: 0, argName: 'noDelete', description: "Do not delete (keep) branches and views - gradle flag -DnoDelete=true"],
             usr: [longOpt: 'jenkins-user', required: false, args: 1, argName: 'jenkinsUser', description: "Jenkins username - gradle flag -DjenkinsUser=<jenkinsUser>"],
             pwd: [longOpt: 'jenkins-password', required: false, args: 1, argName: 'jenkinsPassword', description: "Jenkins password - gradle flag -DjenkinsPassword=<jenkinsPassword>"],
-            sp : [longOpt: 'sonar-password', required: false, args: 1, argName: 'sonarPassword', description: "Sonar password - gradle flag -DsonarPassword=<sonarPassword>"],
-            su : [longOpt: 'sonar-user', required: false, args: 1, argName: 'sonarUser', description: "Sonar username - gradle flag -DsonarUser=<sonarUser>"],
-            surl : [longOpt: 'sonar-url', required: false, args: 1, argName: 'sonarUrl', description: "Sonar URL - gradle flag -DsonarUrl=<sonarUrl>"],
-            // TODO: Replace below with key:value pairs
-            co : [longOpt: 'checkout-path', required: false, args: 1, argName: 'checkoutPath', description: "Checkout Path - gradle flag -DcheckoutPath=<checkoutPath>"],
-            sf : [longOpt: 'solution-file', required: false, args: 1, argName: 'solutionFile', description: "Solution File - gradle flag -DsolutionFile=<solutionFile>"]
+            parms : [longOpt: 'params', required: false, args: 1, argName: 'params', description: "Other parameters parsed into a map to be used as replacement for placeholders - gradle flag -Dparms=param1=value1,param2=value2"]
     ]
 
     public static void main(String[] args) {
@@ -76,19 +71,27 @@ class Main {
 
     public static showConfiguration(Map<String, String> argsMap) {
         println "==============================================================="
-        argsMap.each { k, v -> println " $k: ${formatValue(k, v)}" }
+        argsMap.each { k, v -> println " $k: ${hidePasswordValue(k, v)}" }
         println "==============================================================="
     }
 
-    public static formatValue(String key, String value) {
-        return (key == "jenkinsPassword") ? "********" : value
+    public static hidePasswordValue(String key, String value) {
+        return key.toLowerCase().contains("password") ? "*" * value.length() : value
     }
 
     public static Map<String, String> mergeSystemPropertyOptions(OptionAccessor commandLineOptions) {
         Map<String, String> mergedArgs = [:]
         opts.each { String shortOpt, Map<String, String> optMap ->
             if (optMap.argName) {
-                mergedArgs[optMap.argName] = commandLineOptions."$shortOpt" ?: System.getProperty(optMap.argName)
+                def value = commandLineOptions."$shortOpt" ?: System.getProperty(optMap.argName)
+                if(optMap.argName == "params") {
+                    // Process params into key:value pairs and add to the map
+                    value.split(',').each { token -> token.split('=').with { mergedArgs[it[0]] = it[1] } }
+                }
+                else {
+                    // Add the key:value pair to the map
+                    mergedArgs[optMap.argName] = value
+                }
             }
         }
         return mergedArgs.findAll { k, v -> v }

@@ -1,6 +1,7 @@
 package com.neoteric.jenkins
 
 class JenkinsJobManager {
+    Map placeholders
 
     String templateJobPrefix
     String jobPrefix
@@ -12,8 +13,6 @@ class JenkinsJobManager {
     String sonarUrl
     String sonarUser
     String sonarPassword
-    String checkoutPath
-    String solutionFile
 
     Boolean dryRun = false
     Boolean noDelete = false
@@ -36,8 +35,13 @@ class JenkinsJobManager {
     SonarApi sonarApi
 
     JenkinsJobManager(Map props) {
+        // Store placeholders in a property
+        placeholders = props
+        // Copy to specific properties if defined
         for (property in props) {
-            this."${property.key}" = property.value
+            if(this.hasProperty(property.key)) {
+                this."${property.key}" = property.value
+            }
         }
         initJenkinsApi()
         initGitApi()
@@ -100,7 +104,7 @@ class JenkinsJobManager {
                 branchName.startsWith(branchSuffixMatch[templateBranchToProcess])
             }
 
-            println "---> Founded corresponding branches: $branchesWithCorrespondingTemplate"
+            println "---> Found corresponding branches: $branchesWithCorrespondingTemplate"
             branchesWithCorrespondingTemplate.each { branchToProcess ->
                 println "-----> Processing branch: $branchToProcess"
                 List<ConcreteJob> expectedJobsPerBranch = templateJobsByBranch[templateBranchToProcess].collect { TemplateJob templateJob ->
@@ -111,9 +115,7 @@ class JenkinsJobManager {
                 List<String> jobNamesPerBranch = jobNames.findAll { it.endsWith(branchToProcess) }
                 println "-------> Job Names per branch:"
                 jobNamesPerBranch.each { println "           $it" }
-                List<ConcreteJob> missingJobsPerBranch = expectedJobsPerBranch.findAll { expectedJob ->
-                    !jobNamesPerBranch.any { it.contains(expectedJob.jobName) }
-                }
+                List<ConcreteJob> missingJobsPerBranch = expectedJobsPerBranch.findAll { expectedJob -> !jobNamesPerBranch.any { it.contains(expectedJob.jobName) }                }
                 println "-------> Missing jobs:"
                 missingJobsPerBranch.each { println "           $it" }
                 missingJobs.addAll(missingJobsPerBranch)
@@ -132,7 +134,7 @@ class JenkinsJobManager {
         if (missingJobs) {
             for (ConcreteJob missingJob in missingJobs) {
                 println "Creating missing job: ${missingJob.jobName} from ${missingJob.templateJob.jobName}"
-                jenkinsApi.cloneJobForBranch(jobPrefix, missingJob, createJobInView, gitUrl, checkoutPath, solutionFile)
+                jenkinsApi.cloneJobForBranch(jobPrefix, missingJob, createJobInView, gitUrl, placeholders)
                 jenkinsApi.startJob(missingJob)
             }
         }

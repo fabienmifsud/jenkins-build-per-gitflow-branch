@@ -51,19 +51,18 @@ class JenkinsApi {
     }
 
     String getJobConfig(String jobName) {
-        def response = get(path: "job/${jobName}/config.xml", contentType: TEXT,
-                headers: [Accept: 'application/xml'])
-        response.data.text
+        def response = get(path: "job/${jobName}/config.xml", contentType: TEXT, headers: [Accept: 'application/xml'])
+        return response.data.text
     }
 
-    void cloneJobForBranch(String jobPrefix, ConcreteJob missingJob, String createJobInView, String gitUrl, String checkoutPath, String solutionFile) {
+    void cloneJobForBranch(String jobPrefix, ConcreteJob missingJob, String createJobInView, String gitUrl, Map placeholders) {
         String createJobInViewPath = resolveViewPath(createJobInView)
-        String missingJobConfig = configForMissingJob(missingJob, gitUrl, checkoutPath, solutionFile)
+        String missingJobConfig = configForMissingJob(missingJob, gitUrl, placeholders)
         TemplateJob templateJob = missingJob.templateJob
 
         //Copy job with jenkins copy job api, this will make sure jenkins plugins get the call to make a copy if needed (promoted builds plugin needs this)
         post(createJobInViewPath + 'createItem', missingJobConfig, [name: missingJob.jobName, mode: 'copy', from: templateJob.jobName], ContentType.XML)
-
+        // Update configuration for newly copied job
         post('job/' + missingJob.jobName + "/config.xml", missingJobConfig, [:], ContentType.XML)
         //Forced disable enable to work around Jenkins' automatic disabling of clones jobs
         post('job/' + missingJob.jobName + '/disable')
@@ -79,24 +78,30 @@ class JenkinsApi {
         elements.join();
     }
 
-    String configForMissingJob(ConcreteJob missingJob, String gitUrl, String checkoutPath, String solutionFile) {
+    String configForMissingJob(ConcreteJob missingJob, String gitUrl, Map placeholders) {
         TemplateJob templateJob = missingJob.templateJob
         String config = getJobConfig(templateJob.jobName)
-        return processConfig(config,[
-            "GITBRANCH":missingJob.branchName,
-            "GITURL":gitUrl,
-            "CHECKOUTPATH":checkoutPath,
-            "SOLUTIONFILE":solutionFile
-        ])
+        // Add branch specific placeholders
+        def newPlaceholders = [
+            "GITBRANCHNAME":missingJob.branchName,
+            "GITBRANCHLABEL":missingJob.branchLabel,
+            "GITBRANCHTYPE":missingJob.branchType
+        ]
+        newPlaceholders.putAll(placeholders)
+        // Update configuration using new placeholders
+        return processConfig(config,newPlaceholders)
     }
 
-    public String processConfig(String entryConfig, Map<String,String> placeholders) {
+    public String processConfig(String entryConfig, Map placeholders) {
         def newConfig = entryConfig;
         for(placeholder in placeholders) {
             if(placeholder.value == null) {
                 continue
             }
-            newConfig = newConfig.replace("[&amp;$placeholder.key]", placeholder.value);
+            def safeValue = Main.hidePasswordValue(placeholder.key, placeholder.value)
+            def key=placeholder.key.toUpperCase()
+            println "Processing Placeholder: $key = $safeValue"
+            newConfig = newConfig.replace("[&amp;$key]", placeholder.value);
         }
         return newConfig;
     }

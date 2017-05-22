@@ -9,4 +9,6 @@ class ConcreteJob {
     TemplateJob templateJob
     String jobName
     String branchName
+    String branchLabel
+    String branchType
 }
