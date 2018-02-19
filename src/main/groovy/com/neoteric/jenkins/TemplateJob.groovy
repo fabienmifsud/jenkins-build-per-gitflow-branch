@@ -15,7 +15,7 @@ class TemplateJob {
         ConcreteJob concreteJob = new ConcreteJob(
             templateJob: this,
             branchName: branchName,
-            jobName: jobPrefix + '-' + jobNameForBranch(branchName),
+            jobName: jobPrefix + jobNameForBranch(branchName),
             branchLabel: branchName.substring(dashIndex + 1),
             branchType: branchName.substring(0, dashIndex)
         )
