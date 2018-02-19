@@ -17,31 +17,6 @@ class GitApiTests {
 	}
 	
     @Test
-	public void shouldProcessGoodCommand() {
-        gitApi.eachResultLine("echo foo bar baz") { String line ->
-            assertThat(line).isEqualTo("foo bar baz")
-        }
-    }
-
-    @Test
-	public void shouldFailWhenProcessingBadCommand() {
-        assert "Cannot run program \"mrmxyzptlk\": error=2, No such file or directory" == shouldFail {
-            gitApi.eachResultLine("mrmxyzptlk") { String line ->
-                fail("Should not have gotten here, this should throw an error as the command shouldn't exist")
-            }
-        }
-    }
-
-    @Test
-	public void testBadCommandThrowsException() {
-        assert "Error executing command: cat thisfiledoesntexist -> cat: thisfiledoesntexist: No such file or directory" == shouldFail {
-            gitApi.eachResultLine("cat thisfiledoesntexist") { String line ->
-                fail("Should not have gotten here, this should throw an error, the command exists, but it doesn't run successfully")
-            }
-        }
-    }
-
-    @Test
 	public void testGetBranchNames() {
         String mockResult = """
 10b42258f451ebf2640d3c18850e0c22eecdad4\trefs/heads/ted/feature_branch

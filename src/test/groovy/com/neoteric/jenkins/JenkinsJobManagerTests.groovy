@@ -21,8 +21,7 @@ class JenkinsJobManagerTests {
 
 	@Test
 	public void testFindTemplateJobs() {
-		JenkinsJobManager jenkinsJobManager =
-				new JenkinsJobManager(templateJobPrefix: "template", jobPrefix: "myproj", jenkinsUrl: "http://dummy.com", gitUrl: "git@dummy.com:company/myproj.git")
+		JenkinsJobManager jenkinsJobManager = new JenkinsJobManager(templateJobPrefix: "template", jobPrefix: "myproj", jenkinsUrl: "http://dummy.com", gitUrl: "git@dummy.com:company/myproj.git")
 
 		List<String> allJobNames = [
 			"myproj-foo-master",
@@ -33,7 +32,24 @@ class JenkinsJobManagerTests {
 		assert templateJobs.size() == 1
 		TemplateJob templateJob = templateJobs.first()
 		assert templateJob.jobName == "template-foo-feature"
-		assert templateJob.baseJobName == "foo"
+		assert templateJob.baseJobName == "-foo"
+		assert templateJob.templateBranchName == "feature"
+	}
+
+	@Test
+	public void testFindTemplateJobs_noBaseName() {
+		JenkinsJobManager jenkinsJobManager = new JenkinsJobManager(templateJobPrefix: "template", jobPrefix: "myproj", jenkinsUrl: "http://dummy.com", gitUrl: "git@dummy.com:company/myproj.git")
+
+		List<String> allJobNames = [
+			"myproj-master",
+			"otherproj-master",
+			"template-feature"
+		]
+		List<TemplateJob> templateJobs = jenkinsJobManager.findRequiredTemplateJobs(allJobNames)
+		assert templateJobs.size() == 1
+		TemplateJob templateJob = templateJobs.first()
+		assert templateJob.jobName == "template-feature"
+		assert templateJob.baseJobName == ""
 		assert templateJob.templateBranchName == "feature"
 	}
 
@@ -48,27 +64,6 @@ class JenkinsJobManagerTests {
 		String result = shouldFail(AssertionError) { jenkinsJobManager.findRequiredTemplateJobs(allJobNames) }
 
 		assertThat(result).contains("Unable to find any jobs matching template regex")
-	}
-
-
-	@Test
-	public void testGetTemplateJobs() {
-		JenkinsJobManager jenkinsJobManager = new JenkinsJobManager(jobPrefix: "NeoDocs", templateJobPrefix: "NeoDocsTemplates", gitUrl: "git@dummy.com:company/myproj.git", jenkinsUrl: "http://dummy.com")
-
-		List<String> allJobNames = [
-			"NeoDocs-build-feature",
-			"NeoDocsTemplates-build-feature",
-			"NeoDocsTemplates-build-featured",
-			"NeoDocsTemplates-deploy-feature",
-			"NeoDocsTemplates-build-hotfix"
-		]
-		List<TemplateJob> templateJobs = [
-			new TemplateJob(jobName: "NeoDocsTemplates-build-feature", baseJobName: "build", templateBranchName: "feature"),
-			new TemplateJob(jobName: "NeoDocsTemplates-deploy-feature", baseJobName: "deploy", templateBranchName: "feature"),
-			new TemplateJob(jobName: "NeoDocsTemplates-build-hotfix", baseJobName: "build", templateBranchName: "hotfix")
-		]
-
-		assert templateJobs == jenkinsJobManager.findRequiredTemplateJobs(allJobNames)
 	}
 
 	@Test
@@ -113,7 +108,7 @@ class JenkinsJobManagerTests {
 	class JenkinsApiMocked extends JenkinsApi {
 		
 		@Override
-		public void cloneJobForBranch(String jobPrefix, ConcreteJob missingJob, String createJobInView, String gitUrl) {
+		public void cloneJobForBranch(String jobPrefix, ConcreteJob missingJob, String createJobInView, String gitUrl, Map placeholders) {
 		}
 		
 		@Override

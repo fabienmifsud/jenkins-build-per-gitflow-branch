@@ -10,10 +10,7 @@ class JenkinsJobManager {
     String createJobInView
     String jenkinsUser
     String jenkinsPassword
-    String sonarUrl
-    String sonarUser
-    String sonarPassword
-
+    
     Boolean dryRun = false
     Boolean noDelete = false
     Boolean startOnCreate = false
@@ -32,8 +29,7 @@ class JenkinsJobManager {
 
     JenkinsApi jenkinsApi
     GitApi gitApi
-    SonarApi sonarApi
-
+    
     JenkinsJobManager(Map props) {
         // Store placeholders in a property
         placeholders = props
@@ -45,10 +41,6 @@ class JenkinsJobManager {
         }
         initJenkinsApi()
         initGitApi()
-
-        if (sonarUrl && sonarUser) {
-            initSonarApi()
-        }
     }
 
     void syncWithRepo() {
@@ -76,7 +68,7 @@ class JenkinsJobManager {
     }
 
     public List<TemplateJob> findRequiredTemplateJobs(List<String> allJobNames) {
-        String regex = /^($templateJobPrefix)-(.*)-($templateFeatureSuffix|$templateReleaseSuffix|$templateHotfixSuffix)$/
+        String regex = /^($templateJobPrefix)(.*?)-($templateFeatureSuffix|$templateReleaseSuffix|$templateHotfixSuffix)$/
 
         List<TemplateJob> templateJobs = allJobNames.findResults { String jobName ->
 
@@ -140,15 +132,6 @@ class JenkinsJobManager {
         }
 
         if (!noDelete && jobsToDelete) {
-
-            if (sonarApi) {
-                println "Invoking sonar to delete deprecated jobs:\n\t${jobsToDelete.join('\n\t')}"
-
-                jobsToDelete.each { String jobName ->
-                    sonarApi.delete(jenkinsApi.getJobConfig(jobName))
-                }
-            }
-
             println "Deleting deprecated jobs:\n\t${jobsToDelete.join('\n\t')}"
             jobsToDelete.each { String jobName ->
                 jenkinsApi.deleteJob(jobName)
@@ -181,25 +164,4 @@ class JenkinsJobManager {
 
         return this.gitApi
     }
-
-    SonarApi initSonarApi() {
-
-        println("Sonar API - initializing")
-
-        if (!sonarApi) {
-
-            if (dryRun) {
-                println "DRY RUN! Not executing any delete command to Sonar!"
-                this.sonarApi = new SonarApiReadOnly()
-            }else {
-                this.sonarApi = new SonarApi()
-            }
-                println "Sonar API - initialized"
-
-                sonarApi.setSonarServerUrl(sonarUrl)
-                this.sonarApi.addBasicAuth(sonarUser, sonarPassword)
-            }
-            return this.sonarApi
-        }
-
-    }
+}

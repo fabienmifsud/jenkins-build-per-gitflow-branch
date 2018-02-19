@@ -57,9 +57,6 @@ The whole idea is to have a single Jenkins job which executes periodically, chec
 - `-DjobPrefix` Prefix name of project jobs to create
 - `-DcreateJobInView` If you want the script to create the job in a view provide the view name here. It also supports nested views, just separate them with a slash '/', ex. *view/nestedview*
 - `-DnoDelete` pass this flag with *true* value to avoid removing obsolete jobs (with no corresponding git branch) (optional)
-- `-DsonarUrl` URL of the Sonar. (optional)
-- `-DsonarUser` Sonar HTTP basic authorization user name. (optional)
-- `-DsonarPassword` Sonar HTTP basic authorisation password. (optional)
 
 Sample parameters configuration:
 ```
@@ -70,9 +67,6 @@ Sample parameters configuration:
 -DtemplateJobPrefix=SimpleJarTemplate
 -DjobPrefix=ProjectOne
 -DcreateJobInView=ProjectOne
--DsonarPassword=password
--DsonarUser=user
--DsonarUrl=http://mysonarhost.com:9090/
 ```
 
 ##### 3. Templates
@@ -82,10 +76,6 @@ Notes on configuring your template:
 - If you want to start your job immediately after it's created, mark the template as parametrized build and add a Boolean parameter named **startOnCreate** and set it's default value to true (tick in the checkbox)
 - Git repository URL is going to be replaced by the script (with the project Git URL set in sync job parameters)
 - Branch to build is going to be determined and set by the script
-- If you use Sonar and want to have Sonar builds separated for each branch type, just add Sonar capability to your template and the Sonar branch option will be determined and set by the script
-
-##### 4. Sonar Notes
-When a -DsonarUser and -DsonarUrl flags are both used script will try to delete Sonar project created by a template, when a job in Jenkins becomes deprecated. 
 
 [Jenkins Build Per Branch]:http://entagen.github.io/jenkins-build-per-branch/
 [GitHub flow]:http://scottchacon.com/2011/08/31/github-flow.html
