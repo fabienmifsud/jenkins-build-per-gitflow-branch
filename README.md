@@ -22,13 +22,13 @@ Template jobs should follow
 `<templateJobPrefix>-<jobName>-<branchName>` name, where:
 - *templateJobPrefix* - a prefix which distinguish particular type of template (one template type can be reused among several projects (explained further)
 - *jobName* - name of your Jenkins job purpose, ex. build etc. 
-- *branchName* - one of the 3 Git Flow branch types: *feature*, *release*, *hotfix*
+- *branchName* - one of the 3 Git Flow branch types: *feature*, *release*, *hotfix*, *bugfix*
 
 Regular jobs should follow similar pattern `<jobPrefix>-<jobName>-<branchName>`, where:
 - *jobPrefix* - is a prefix which distinguish particular project
 - for *jobName* and *branchName* apply the same rule as for templates 
 
-Git Flow branches should start with *feature-*, *hotfix-*, *release-* prefixes. It is because, Jenkins is having hard time with slashes (i.e. *feature/*, *hotfix/*, *release/*). There are some workarounds (substituting '/' with and underscore for a jenkins job name - take a look into the [code of Entagen version]), but we were fine with this trade off. 
+Git Flow branches should start with *feature-*, *hotfix-*, *release-*, *bugfix-* prefixes. It is because, Jenkins is having hard time with slashes (i.e. *feature/*, *hotfix/*, *release/*, *bugfix/*). There are some workarounds (substituting '/' with and underscore for a jenkins job name - take a look into the [code of Entagen version]), but we were fine with this trade off. 
 
 ### Usage
 Usage is also very similiar to the original, but let me retrace the steps:
