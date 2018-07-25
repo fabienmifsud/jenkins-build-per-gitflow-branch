@@ -62,6 +62,7 @@ class JenkinsApi {
         println "-----> createInView after" + createJobInView
         String missingJobConfig = configForMissingJob(missingJob, gitUrl, scriptCommand)
         TemplateJob templateJob = missingJob.templateJob
+        templateJob.
 
         //Copy job with jenkins copy job api, this will make sure jenkins plugins get the call to make a copy if needed (promoted builds plugin needs this)
         post(createJobInViewPath + 'createItem', missingJobConfig, [name: missingJob.jobName, mode: 'copy', from: templateJob.jobName], ContentType.XML)
@@ -70,9 +71,7 @@ class JenkinsApi {
         //Forced disable enable to work around Jenkins' automatic disabling of clones jobs
         //But only if the original job was enabled
         post('job/' + missingJob.jobName + '/disable')
-        if (!missingJobConfig.contains("<disabled>true</disabled>")) {
-            post('job/' + missingJob.jobName + '/enable')
-        }
+        post('job/' + missingJob.jobName + '/enable')
     }
 
     public String resolveViewPath(String createInView) {
