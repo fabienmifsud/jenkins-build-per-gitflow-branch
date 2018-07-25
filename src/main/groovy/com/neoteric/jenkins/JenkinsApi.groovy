@@ -62,7 +62,6 @@ class JenkinsApi {
         println "-----> createInView after" + createJobInView
         String missingJobConfig = configForMissingJob(missingJob, gitUrl, scriptCommand)
         TemplateJob templateJob = missingJob.templateJob
-        templateJob.
 
         //Copy job with jenkins copy job api, this will make sure jenkins plugins get the call to make a copy if needed (promoted builds plugin needs this)
         post(createJobInViewPath + 'createItem', missingJobConfig, [name: missingJob.jobName, mode: 'copy', from: templateJob.jobName], ContentType.XML)
