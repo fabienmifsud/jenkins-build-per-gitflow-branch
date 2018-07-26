@@ -71,6 +71,9 @@ class JenkinsApi {
         //But only if the original job was enabled
         post('job/' + missingJob.jobName + '/disable')
         post('job/' + missingJob.jobName + '/enable')
+
+        //Start Build
+        post('job/' + missingJob.jobName + '/build?delay=0sec')
     }
 
     public String resolveViewPath(String createInView) {
