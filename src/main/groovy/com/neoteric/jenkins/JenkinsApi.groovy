@@ -120,7 +120,7 @@ class JenkinsApi {
         }
 
         // Add Cassandra test
-        println root.mavenOpts.value
+        println root.mavenOpts
         def ks = branchName.replaceAll("-", "_")
         root.mavenOpts.value += " -Dtest.cassandra.keyspace=$ks"
 
