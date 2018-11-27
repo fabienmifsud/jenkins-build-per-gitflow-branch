@@ -1,18 +1,17 @@
 package com.neoteric.jenkins
 
+
 import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.RESTClient
-import org.apache.commons.lang.StringEscapeUtils
+import org.apache.http.HttpRequest
+import org.apache.http.HttpRequestInterceptor
+import org.apache.http.HttpStatus
+import org.apache.http.client.HttpResponseException
+import org.apache.http.conn.HttpHostConnectException
+import org.apache.http.protocol.HttpContext
 
 import static groovyx.net.http.ContentType.*
-
-import org.apache.http.conn.HttpHostConnectException
-import org.apache.http.client.HttpResponseException
-import org.apache.http.HttpStatus
-import org.apache.http.HttpRequestInterceptor
-import org.apache.http.protocol.HttpContext
-import org.apache.http.HttpRequest
 
 class JenkinsApi {
 
@@ -73,6 +72,7 @@ class JenkinsApi {
         post('job/' + missingJob.jobName + '/enable')
 
         //Start Build
+        sleep(1_000)
         post('job/' + missingJob.jobName + '/build?delay=0sec')
     }
 
@@ -118,6 +118,9 @@ class JenkinsApi {
         if (startOnCreateParam) {
             startOnCreateParam.parent().remove(startOnCreateParam)
         }
+
+        // Add Cassandra test
+        root.mavenOpts += " -Dtest.cassandra.keyspace=$branchName"
 
         //check if it was the only parameter - if so, remove the enclosing tag, so the project won't be seen as build with parameters
         def propertiesNode = root.properties
