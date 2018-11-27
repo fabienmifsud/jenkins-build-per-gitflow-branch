@@ -120,9 +120,9 @@ class JenkinsApi {
         }
 
         // Add Cassandra test
-        println root.mavenOpts
+        println root.mavenOpts[0].value
         def ks = branchName.replaceAll("-", "_")
-        root.mavenOpts.value += " -Dtest.cassandra.keyspace=$ks"
+        root.mavenOpts[0].value += " -Dtest.cassandra.keyspace=$ks"
 
         //check if it was the only parameter - if so, remove the enclosing tag, so the project won't be seen as build with parameters
         def propertiesNode = root.properties
