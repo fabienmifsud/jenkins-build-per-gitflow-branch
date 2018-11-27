@@ -72,7 +72,7 @@ class JenkinsApi {
         post('job/' + missingJob.jobName + '/enable')
 
         //Start Build
-        sleep(1_000)
+        sleep(5_000)
         post('job/' + missingJob.jobName + '/build?delay=0sec')
     }
 
@@ -118,13 +118,6 @@ class JenkinsApi {
         if (startOnCreateParam) {
             startOnCreateParam.parent().remove(startOnCreateParam)
         }
-
-        // Add Cassandra test
-        println root.mavenOpts.value
-        println root.mavenOpts[0].value
-        def ks = root.mavenOpts.value + " -Dtest.cassandra.keyspace=" + branchName.replaceAll("-", "_")
-        println ks
-        root.mavenOpts[0].value = ks
 
         //check if it was the only parameter - if so, remove the enclosing tag, so the project won't be seen as build with parameters
         def propertiesNode = root.properties
